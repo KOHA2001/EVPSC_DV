@@ -130,11 +130,12 @@ void Slip::cal_strain_rate_pow(Matrix3d stress_tensor){
 void Slip::cal_strain_rate_disvel(Matrix3d stress_tensor){
     double burgers = update_params[0];
     double rss_slip = cal_rss(stress_tensor);
-    double rss_j = 0.0; //the stress influenced by the 
+    double rss_j = 0.0; //the stress influenced by the electricity
     custom_vars[1] = rss_slip;
     velocity = disl_velocity(rss_slip);
     shear_rate = abs(rho_mov * burgers * velocity) * sign(rss_slip);
     rss = rss_slip;
+    out_var = shear_rate;
 }
 
 void Slip::cal_drate_dtau(Matrix3d stress_tensor){
@@ -237,7 +238,7 @@ void Slip::update_disvel(PMode** slip_sys, vector<vector<double>> lat_hard_mat, 
      * 0: burgers, 1: mean_free_path, 2: disl_density_resist, 3: forest_stress
      */
     double c_mfp = harden_params[1], resistance_slip = harden_params[4], c_forest = harden_params[8], HP_stress = harden_params[16];
-    resistance_slip = resistance_slip/factor(Current_intensity, ref_current_intensity_0);//the renewed resistence by the current pulsing
+    //resistance_slip = resistance_slip/factor(Current_intensity, ref_current_intensity_0);//the renewed resistence by the current pulsing
     double burgers, disl_density_for, disl_density_resist, joint_density, debris_density, forest_stress, boundary_resistance, mfp;
     disl_density_for = disl_density_resist = joint_density = debris_density = 0;
     for(int i = 0; i < nmode; i++){
@@ -252,7 +253,7 @@ void Slip::update_disvel(PMode** slip_sys, vector<vector<double>> lat_hard_mat, 
 
     boundary_resistance = HP_stress + c_forest * shear_modulus * burgers * sqrt(debris_density);
     forest_stress = c_forest * shear_modulus * burgers * sqrt(disl_density_resist + 0.707*joint_density) + boundary_resistance;
-    crss = forest_stress + resistance_slip;
+    crss = forest_stress;
     mfp = c_mfp / sqrt(disl_density_for);
     update_params[0] = burgers, update_params[1] = mfp, update_params[2] = disl_density_resist, update_params[3] = forest_stress;
     if (num == 0){
@@ -284,11 +285,11 @@ void Slip::update_ssd(Matrix3d strain_rate, double dtime){
                //reduced multiplication rate
         disloc_density = rho_H;
         double equi_strain_rate = calc_equivalent_value(strain_rate);
-        gg = gg/factor(Current_intensity, ref_current_intensity_2); //reduced normalized energy 
-        D = D ;//* factor(Current_intensity, ref_current_intensity_0); // give energy to drag stress;
+        //gg = gg/factor(Current_intensity, ref_current_intensity_2); //reduced normalized energy 
+        //D = D*factor_beta(Current_intensity, ref_current_intensity_0, bvalue); // give energy to drag stress;
         double rho_sat_new = c_forest * burgers / gg * (1-k_boltzmann * temperature/D/pow(burgers,3) * log(abs(equi_strain_rate)/ref_srate));
         rho_sat_new = max(pow(1/rho_sat_new,2), 0.5*disloc_density);
-        if (rho_sat_new < 2 * rho_sat) rho_sat = rho_sat_new;
+        if (rho_sat_new < 1.0e20) rho_sat = rho_sat_new;
         if (rho_sat == 0.0) rho_sat = rho_sat_new;
         custom_vars[1] = max(custom_vars[1], rho_sat);
         double tau_eff = max(abs(rss) - forest_stress, 0.);
@@ -297,8 +298,16 @@ void Slip::update_ssd(Matrix3d strain_rate, double dtime){
         custom_vars[4] = max(custom_vars[4], forest_stress);
         double term_nuc = c_nuc * max(abs(rss)-tau_nuc,0.) / (shear_modulus * burgers * burgers);
         custom_vars[5] = max(custom_vars[5], term_nuc * abs(shear_rate) * dtime);
+        //
         double term_multi = c_multi / mfp; 
+        //
         c_annih = (term_multi + term_nuc) / rho_sat;
+        double A =  1 / sqrt(rho_sat);
+        // if (term_nuc != 0) {
+        //     double disloc_incre = (term_multi + term_nuc - c_annih * disloc_density) * abs(shear_rate) * dtime;
+        // }else{
+        //     double disloc_incre = term_multi*(sqrt(disloc_density)- A*disloc_density) * abs(shear_rate) * dtime;
+        // }
         double disloc_incre = (term_multi + term_nuc - c_annih * disloc_density) * abs(shear_rate) * dtime;
         double debris_incre = c_annih * disloc_density * abs(shear_rate) * dtime * c_debri;
         debris_incre = debris_incre > rho_sat ? rho_debri * 0.1 : debris_incre;

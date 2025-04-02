@@ -51,8 +51,10 @@ void initial_output_files(){
     grain_out << "Grain ID,EVM_g,SVM_g,Temp";
     int modes_count = pcrys->g[0].modes_num;
     for(int i = 0; i < modes_count; ++i) grain_out << ",Mode_density " << i+1;
+    for(int i = 0; i < modes_count; ++i) grain_out << ",Mode_SlipRate " << i+1;
     grain_out << endl;
     grain_out << 0 << "," << 0.0 << "," << 0.0 << "," << pcrys->temperature_poly;
+    for(int i = 0; i < modes_count; ++i) grain_out << "," << 0.0;
     for(int i = 0; i < modes_count; ++i) grain_out << "," << 0.0;
     grain_out << endl;
 
@@ -110,8 +112,8 @@ void output_grain_info(int i){
     grain_out << grain->grain_i << "," << calc_equivalent_value(grain->get_strain_g()) << ",";
     grain_out << calc_equivalent_value(grain->get_stress_g()) << "," << pcrys->temperature_poly;
 
-    //for(int j = 0; j < modes_count; ++j) grain_out << "," << grain->gmode[j]->disloc_density;
+    for(int j = 0; j < modes_count; ++j) grain_out << "," << grain->gmode[j]->disloc_density;
 
-    for(int j = 0; j < modes_count; ++j) grain_out << "," << grain->gmode[j]->crss;
+    for(int j = 0; j < modes_count; ++j) grain_out << "," << grain->gmode[j]->out_var;
     grain_out << endl;
 }

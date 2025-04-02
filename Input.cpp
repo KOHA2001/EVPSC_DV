@@ -117,19 +117,21 @@ int loadinput(string fname, Procs::Process &Proc)
             if (!loadinp.eof()) //if the file ends, return
             {
                 if (tp.find("duty") != tp.npos){
-                    getline(loadinp, tp); VectorXd electric_coeff = getnum(tp, 11);
+                    getline(loadinp, tp); VectorXd electric_coeff = getnum(tp, 13);
                     duty_ratio_J = electric_coeff(0);
                     Amplitude_J = electric_coeff(1);
                     Frequency = electric_coeff(2);
                     ref_current_intensity_0 = electric_coeff(3);
                     ref_current_intensity_1 = electric_coeff(4);
                     ref_current_intensity_2 = electric_coeff(5);
-                    bvalue = electric_coeff(6);
-                    shock_int = electric_coeff(7);
-                    shock_fin = electric_coeff(8);
-                    flag_emode = electric_coeff(9);
-                    K_ew = electric_coeff(10);
-
+                    tau1 = electric_coeff(6);
+                    tau2 = electric_coeff(7);
+//recommanded to not use the following parameters
+                    bvalue = electric_coeff(8);
+                    shock_int = electric_coeff(9);
+                    shock_fin = electric_coeff(10);
+                    flag_emode = electric_coeff(11);
+                    K_ew = electric_coeff(12);
                 }
             }
             logger.debug("duty_ratio_J = " + to_string(duty_ratio_J));

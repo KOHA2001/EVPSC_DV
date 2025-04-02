@@ -1058,16 +1058,35 @@ double J_intensity_pulse(double time_acc, double duty_ratio, double amplitude_J,
         return 0;
     }
 }// This part is to define a pulsing function.
-
-// double J_real_pulse(double time_acc,double duty_ratio,  double frequency){
-//     double time_delay = 0.0;
-//     double int_real_duty;
-//     double frac_real_duty = std::modf(time_acc*frequency, &int_real_duty);
-//     custom_vars[3] = frac_real_duty;
-//     if ()
-
-
-// }
+// 如需实现完整的充放电周期，可添加放电相位控制：
+double J_charge_discharge(double time_acc,  double duty_ratio, double amplitude_A, // 饱和幅值
+    double frequency,   // 工作频率(Hz)
+    double tau1,        // 充电时间常数
+    double tau2) 
+{
+    double int_cycle;
+    double real_J;
+    double frac_cycle = std::modf(time_acc * frequency, &int_cycle);
+    const double cycle_period = 1.0 / frequency; // 完整周期时长
+    // 当前周期已流逝时间
+    const double t_in_cycle = frac_cycle * cycle_period;
+    if(frac_cycle <= duty_ratio) {
+        // 充电阶段：A*(1 - e^(-t/tau1))
+        real_J = amplitude_A * (1 - std::exp(-t_in_cycle / tau1));
+        custom_vars[3] = real_J; 
+        return real_J;
+    } else {
+        // 放电阶段：需计算充电结束时的电压作为放电起点
+        const double t_charge_end = duty_ratio * cycle_period;
+        const double J_max = amplitude_A * (1 - std::exp(-t_charge_end / tau1));
+        // 放电持续时间 = 当前时间 - 充电阶段结束时间
+        const double t_discharge = t_in_cycle - t_charge_end;
+        // 指数衰减：V_max * e^(-t/tau2)
+        real_J = J_max * std::exp(-t_discharge / tau2);
+        custom_vars[3] = real_J;
+        return real_J;
+    }
+}
 
 double J_shock_sim(double time_acc, double deformation_max, double deformation_rate,  double amplitude_J ,double percent_init, double percent_final){
     double time_tot = deformation_max/deformation_rate;
@@ -1086,7 +1105,7 @@ double factor(double amplitude_J, double ref){
     return fact;
 }
 
-double factor_beta(double amplitude_J, double ref){
+double factor_beta(double amplitude_J, double ref, double bvalue){
     double fact;
     fact = pow((1+ pow((amplitude_J/ref),2)), bvalue);
     return fact;

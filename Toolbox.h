@@ -27,7 +27,7 @@ typedef Matrix<double, 6, 6> Matrix6d;
 
 //
 #define Intn 10 //number of integral points in Eshelby calculation
-#define Mtr 8 //number of Multithread
+#define Mtr 22 //number of Multithread
 #define pi 3.14159265358979323846
 #define k_boltzmann 1.380649e-23
 #define eV_to_J 1.60217662e-19
@@ -165,6 +165,7 @@ double J_real_pulse(double time_acc,double duty_ratio,  double frequency); //rea
 double J_shock_sim(double time_acc, double deformation_max, double deformation_rate,  double amplitude_J ,double percent_init, double percent_final);
 double factor(double amplitude_J, double ref);
 double factor_beta(double amplitude_J, double ref);
+double J_charge_discharge(double time_acc,  double duty_ratio,   double amplitude_A, double frequency,  double tau1, double tau2);
 // Print progress bar
 void update_progress(double progress_f);
 // EVPSC Configuration

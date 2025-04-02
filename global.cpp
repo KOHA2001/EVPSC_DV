@@ -26,6 +26,7 @@ double duty_ratio_J = 0.0;//
 double Amplitude_J = 0.0;//
 double Frequency = 0.0; 
 double ref_current_intensity_0, ref_current_intensity_1, ref_current_intensity_2; //reference current intensity
+double tau1, tau2; //relaxation time/ discharge time
 double rss_j;
 double Current_intensity;
 double deformation_rate;

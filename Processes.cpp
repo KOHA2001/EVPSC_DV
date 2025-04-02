@@ -85,9 +85,11 @@ void Process::loading(Polycs::polycrystal &pcrys){
             }
             time_acc += current_step * max_timestep;
             if (flag_emode == 1){
-                Current_intensity = J_intensity_pulse(time_acc, duty_ratio_J, Amplitude_J, Frequency);
+                Current_intensity = J_charge_discharge(time_acc, duty_ratio_J, Amplitude_J, Frequency, tau1, tau2);
             }else if(flag_emode == 2){
                 Current_intensity = J_shock_sim(time_acc, deformation_max, deformation_rate, Amplitude_J, shock_int, shock_fin); 
+            }else if (flag_emode == 3){
+                Current_intensity = J_intensity_pulse(time_acc, duty_ratio_J, Amplitude_J, Frequency);
             }else{
                 success_count = 0;
                 pcrys.restore_status(false);
@@ -107,6 +109,15 @@ void Process::loading(Polycs::polycrystal &pcrys){
         if(!((istep+1)%texctrl)) Out_texture(pcrys,istep);
         output_info();
         output_grain_info(0);
+        output_grain_info(100);
+        output_grain_info(200);
+        output_grain_info(300);
+        output_grain_info(500);
+        output_grain_info(900);
+        output_grain_info(1500);
+        output_grain_info(1800);
+        output_grain_info(2500);
+        output_grain_info(2800);
         if(!is_convergent) {
             Out_texture(pcrys, istep);
             break;

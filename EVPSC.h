@@ -266,6 +266,7 @@ class PMode
         // Original Contents
         double get_gamma0();
         double get_nrsx();
+        double out_var ;
         double cal_rss(Matrix3d stress_tensor);
         double cal_relative_rss(Matrix3d stress_tensor);
         double update_shear_strain_m();
